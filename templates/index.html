@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SocketIO - Chat</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+<body>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            namespace = '/chat';
+
+            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+
+            socket.on('connect', function() {
+                socket.emit('my_connect', {data: 'Connected', username: $('#username').val()});
+            });
+            socket.on('response', function(msg) {
+                $('#log').append('<br>' + $('<div/>').text(('sender' in msg ? msg['sender'] : 'Received') + ' # ' + msg.data).html());
+            });
+            $('form#broadcast').submit(function(event) {
+                socket.emit('broadcast_event', {data: $('#broadcast_data').val()});
+                return false;
+            });
+            $('form#chat').submit(function(event) {
+                socket.emit('chat_event', {username: $('#username').val(), recipient: $('#recipient').val(), data: $('#room_data').val()});
+                return false;
+            });
+
+        });
+    </script>
+    <h1>Flask-SocketIO Chat</h1>
+    <h2>Welcome {{ username }}</h2>
+    <p>Async mode is: <b>{{ async_mode }}</b></p>
+
+    <form id="broadcast" method="POST" action="#">
+        <input type="text" name="broadcast_data" id="broadcast_data" />
+        <input type="submit" value="Broadcast" />
+    </form>
+    <form id="chat" method="POST" action="#">
+        <input type="text" name="recipient" id="recipient" />
+        <input type="text" name="room_data" id="room_data" />
+        <input type="submit" name="Send" />
+    </form>
+
+    <input type="hidden" name="username", id="username" value="{{ username }}" />
+    <h2>Receive:</h2>
+    <div id="log"></div>
+</body>
+</html>
