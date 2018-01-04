@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, disconnect
 from pymodm.errors import DoesNotExist
 from model import User, History
 
@@ -71,6 +71,13 @@ def handle_chat_event(message):
     except DoesNotExist as err:
         print('handle_chat_event --> Recipient does not exists: ', recipient, ' -->', err)
         emit('response', {'data': 'User ' + recipient + ' does not Exist\'s'}, room=request.sid)
+
+
+@socketio.on('logout_event', namespace='/chat')
+def handle_logout():
+    print('Inside handle_logout -->')
+    emit('logout_response', room=request.sid)
+    disconnect()
 
 
 if __name__ == '__main__':

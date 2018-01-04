@@ -61,12 +61,22 @@
                 socket.emit('broadcast_event', {data: $('#broadcast_data').val()});
                 return false;
             });
+
             $('form#chat').submit(function(event) {
                 $('#log').append('<div id="sublog">' + $('#username').val() + ' # ' + $('#room_data').val() + '</div>')
                 socket.emit('chat_event', {username: $('#username').val(), recipient: $('#recipient').val(), data: $('#room_data').val()});
                 return false;
             });
 
+            $('form#logout').submit(function(event) {
+                socket.emit('logout_event');
+                return false
+            });
+
+            socket.on('logout_response', function() {
+                $('#log').append('<div>Disconnected!</div>');
+                window.location.href = '/';
+            });
         });
     </script>
     <h1>Flask-SocketIO Chat</h1>
@@ -80,7 +90,11 @@
     <form id="chat" method="POST" action="#">
         <input type="text" name="recipient" id="recipient" />
         <input type="text" name="room_data" id="room_data" />
-        <input type="submit" name="Send" />
+        <input type="submit" value="Send" />
+    </form>
+
+    <form id="logout" method="POST" action="#">
+        <input type="submit" value="Logout" />
     </form>
 
     <input type="hidden" name="username", id="username" value="{{ username }}" />
