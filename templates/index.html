@@ -5,6 +5,16 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 </head>
+<style type="text/css">
+    #log {
+        margin: 0;
+        width: 30%;
+        text-align: left;
+    }
+    #sublog {
+        text-align: right;
+    }
+</style>
 <body>
     <script type="text/javascript">
         $(document).ready(function() {
@@ -16,13 +26,43 @@
                 socket.emit('my_connect', {data: 'Connected', username: $('#username').val()});
             });
             socket.on('response', function(msg) {
-                $('#log').append('<br>' + $('<div/>').text(('sender' in msg ? msg['sender'] : 'Received') + ' # ' + msg.data).html());
+                if('broadcast' in msg) {
+                    $('#log').append('<div>' + 'Broadcast # ' + msg.data + '</div>');
+                }
+                else if('sender' in msg) {
+                    if(msg.sender == $('#username').val()) {
+                        $('#log').append('<div id="sublog">' + msg.sender + ' # ' + msg.data + '</div>');
+                    }
+                    else {
+                        $('#log').append('<div><b>' + msg.sender + '</b> # ' + msg.data + '</div>');
+                    }
+                }
+                else {
+                    $('#log').append('<div> Received # ' + msg.data + '</div>');
+                }
             });
+
+            socket.emit('load_history', $('#username').val());
+
+            socket.on('load_history_response', function(payload) {
+                var messages = payload['messages'];
+                for(var i=0; i<messages.length; i++) {
+                    var msg = messages[i];
+                    if(msg.sender == $('#username').val()) {
+                        $('#log').append('<div id="sublog">' + msg.sender + ' # ' + msg.data + '</div>');
+                    }
+                    else {
+                        $('#log').append('<div id="sublog"><b>' + msg.sender + '</b> # ' + msg.data + '</div>');
+                    }
+                }
+            });
+
             $('form#broadcast').submit(function(event) {
                 socket.emit('broadcast_event', {data: $('#broadcast_data').val()});
                 return false;
             });
             $('form#chat').submit(function(event) {
+                $('#log').append('<div id="sublog">' + $('#username').val() + ' # ' + $('#room_data').val() + '</div>')
                 socket.emit('chat_event', {username: $('#username').val(), recipient: $('#recipient').val(), data: $('#room_data').val()});
                 return false;
             });

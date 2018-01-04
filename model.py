@@ -9,4 +9,6 @@ class User(MongoModel):
 
 
 class History(MongoModel):
+    sender = fields.CharField()
+    recipient = fields.CharField()
     message = fields.CharField()
