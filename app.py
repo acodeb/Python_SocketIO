@@ -48,10 +48,10 @@ def load_history(username):
         messages = []
         user_history = History.objects.raw({'$or': [{'sender': username}, {'recipient': username}]})
         for history in user_history:
-            message.append({'data': history.message, 'sender': history.sender})
+            messages.append({'data': history.message, 'sender': history.sender})
         emit('load_history_response', {'messages': messages}, room=request.sid)
     except DoesNotExist as err:
-        print('load_history --> No History for user {}'.format(username))
+        print('load_history --> No History for user {}'.format(username), ' -->', err)
 
 
 @socketio.on('chat_event', namespace='/chat')
@@ -69,7 +69,7 @@ def handle_chat_event(message):
         else:
             emit('response', {'data': 'User ' + recipient + ' is not Available'}, room=request.sid)
     except DoesNotExist as err:
-        print('handle_chat_event --> Recipient does not exists: ', recipient)
+        print('handle_chat_event --> Recipient does not exists: ', recipient, ' -->', err)
         emit('response', {'data': 'User ' + recipient + ' does not Exist\'s'}, room=request.sid)
 
 
